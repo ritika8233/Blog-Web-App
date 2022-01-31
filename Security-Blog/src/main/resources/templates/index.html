@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dynamic Blog</title>
+	<link rel="stylesheet" th:href="@{/fontawesome/css/all.min.css}"> <!-- https://fontawesome.com/ -->
+	<!--<link th:href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro&display=swap" rel="stylesheet"> 
+    -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" type="text/css" />
+	<link rel="stylesheet" th:href="@{/css/templatemo-xtra-blog.css}" type="text/css" />
+    
+<!--
+    
+TemplateMo 553 Xtra Blog
+
+https://templatemo.com/tm-553-xtra-blog
+
+-->
+</head>
+<body>
+	<header class="tm-header" id="tm-header">
+        <div class="tm-header-wrapper">
+            <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="tm-site-header">
+                <div class="mb-3 mx-auto tm-site-logo"><i class="fas fa-times fa-2x"></i></div>            
+                <h2 class="text-center"> <a method="get" action="/logout" href="/logout" sec:authorize= "isAuthenticated()"> Logout </a> </h2>
+                <h2 class="text-center"> <a method="get" action="/login" href="/login" sec:authorize="!isAuthenticated()"> Login </a> </h2>
+            </div>
+            <nav class="tm-nav" id="tm-nav">            
+                <ul>
+      				<li class="tm-nav-item"><a method="get" action="/registeruser" href="/registeruser" class="tm-nav-link" sec:authorize="!isAuthenticated()">
+                        <i class="fas fa-home" ></i>
+                        Register User
+                    </a></li>
+                    <li class="tm-nav-item active"><a method="get" th:action="@{/home}" th:href="@{/home}" class="tm-nav-link">
+                        <i class="fas fa-home"></i>
+                        Blog Home
+                    </a></li>
+      
+                    <li class="tm-nav-item"><a method="get" action="/new" href="/new" class="tm-nav-link">
+                        <i class="fas fa-pen"></i>
+                        Add Blog
+                    </a></li>
+                    <li class="tm-nav-item"><a method="get" action="/aboutus" href="/aboutus" class="tm-nav-link">
+                        <i class="fas fa-users"></i>
+                        About Us
+                    </a></li>
+                    <li class="tm-nav-item"><a method="get" action="/contact" href="/contact" class="tm-nav-link">
+                        <i class="far fa-comments"></i>
+                        Contact Us
+                    </a></li>
+                </ul>
+            </nav>
+            
+        </div>
+    </header>
+    <div class="container-fluid">
+        <main class="tm-main">
+            <!-- Search form -->
+            <div class="row tm-row">
+                <div class="col-12">
+                    <form method="post" th:action="@{/searchblog}" th:href="@{/searchblog}" class="form-inline tm-mb-80 tm-search-form">                
+                        <input class="form-control tm-search-input"  name="search" id="search" type="text" placeholder="Search by author name" aria-label="Search">
+                        <button class="tm-search-button" type="submit" >
+                            <i class="fas fa-search tm-search-icon" aria-hidden="true"></i>
+                        </button>                                
+                    </form>
+                </div>                
+            </div>            
+            <div class="row tm-row">
+            
+            <div sec:authorize="isAuthenticated()">
+			    Welcome <b><span sec:authentication="name">Username</span></b>
+			    &nbsp;
+			    <i><span sec:authentication="principal.authorities">Roles</span></i>
+			</div>
+            <tr th:each="blog: ${blogs}">
+                <article class="col-12 col-md-6 tm-post">
+                    <hr class="tm-hr-primary">
+                    <a th:href="@{'/blog/' + ${blog.id}}" class="effect-lily tm-post-link tm-pt-60">
+                        <div class="tm-post-link-inner">
+                            <img th:src="@{'data:image/jpg/png;base64,'+ ${blog.myimage}}" class="img-fluid">                            
+                        </div>
+                        <span class="position-absolute tm-new-badge">New </span>
+                        <h2 class="tm-pt-30 tm-color-primary tm-post-title"><td th:text="${blog.title}" /> </h2>
+                    </a>                    
+                    <p class="tm-pt-30">
+                       <td th:text="${blog.data}" />
+                    </p>
+                    <div class="d-flex justify-content-between tm-pt-45">
+                        <span class="tm-color-primary"> by <a th:href="@{'/author/' + ${blog.author.id}}"> <td th:text="${blog.author.name}" /> </a> </span>
+                        <span class="tm-color-primary"><td th:text="${blog.date}" /> </span>
+                    </div>
+                    <hr>
+                     
+                    <div class="d-flex justify-content-between">
+                        <span> <a th:href="@{'/editblog/' + ${blog.id}}" 
+                        th:if="${(authName!=null) && ( (authName == blog.author.name) OR (authRole == 'ADMIN') ) }"
+                        
+                        >Edit</a> </span>
+                        <span > <a th:href="@{'/deleteblog/' + ${blog.id}}"
+                        th:if="${(authName!=null) && ( (authName == blog.author.name) OR (authRole == 'ADMIN') ) }"
+                        >Delete </a> </span> 
+                    </div>
+                     
+                </article>
+                
+            </tr>
+              </div>
+            <div class="row tm-row tm-mt-100 tm-mb-75">
+                <div class="tm-prev-next-wrapper">
+                   <a th:if="${currentPage != 1}" th:href="@{'/page/' + ${currentPage-1}}" class="mb-2 tm-btn tm-btn-primary tm-prev-next">Prev</a>
+                   
+                    <a th:if="${currentPage != totalPage}" th:href="@{'/page/' + ${currentPage+1}}" class="mb-2 tm-btn tm-btn-primary tm-prev-next">Next</a>
+                </div>
+                <div class="tm-paging-wrapper">
+                    <span class="d-inline-block mr-3">Page <td th:text="${currentPage}" /> of <td th:text="${totalPage}" /></span>
+                    <nav class="tm-paging-nav d-inline-block">
+                        <ul>
+                        <span th:each="i: ${#numbers.sequence(1, totalPage)}">
+                		<li class="tm-paging-item">
+	                        
+	        					<a th:if="${currentPage != i}" th:href="@{'/page/' + ${i}}" class="mb-2 tm-btn tm-paging-link">[[${i}]]</a>
+								<span th:unless="${currentPage != i}" class="mb-2 tm-btn tm-paging-link-disable">[[${i}]] 	</span>
+	    					
+                            </li>
+                            </span>
+                            <!--
+                            <li class="tm-paging-item">
+                                <a href="#" class="mb-2 tm-btn tm-paging-link">2</a>
+                            </li>
+                            <li class="tm-paging-item">
+                                <a href="#" class="mb-2 tm-btn tm-paging-link">3</a>
+                            </li>
+                            <li class="tm-paging-item">
+                                <a href="#" class="mb-2 tm-btn tm-paging-link">4</a>
+                            </li>-->
+                        </ul>
+                    </nav>
+                </div>                
+            </div>            
+            <footer class="row tm-row">
+                <hr class="col-12">
+                <div class="col-md-6 col-12 tm-color-gray">
+                    Design: <a rel="nofollow" target="_parent" href="https://templatemo.com" class="tm-external-link">TemplateMo</a>
+                </div>
+                <div class="col-md-6 col-12 tm-color-gray tm-copyright">
+                    Copyright 2020 Xtra Blog Company Co. Ltd.
+                </div>
+            </footer>
+        </main>
+    </div>
+    <script th:src="@{/js/jquery.min.js}"></script>
+    <script th:src="@{js/templatemo-script.js}"></script>
+</body>
+</html>
